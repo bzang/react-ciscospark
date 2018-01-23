@@ -20,7 +20,7 @@ function getPackage(pkg, packagesDir = 'packages/node_modules/@ciscospark') {
   }
   catch (err) {
     if (err.code === 'ENOENT') {
-      return getPackage(path.resolve(packagesDir, pkg));
+      return path.resolve(packagesDir, pkg);
     }
   }
   return false;
