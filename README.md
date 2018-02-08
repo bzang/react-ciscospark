@@ -16,7 +16,6 @@ The Cisco Spark for React library allows developers to easily incorporate Spark 
 - [Version](#version)
 - [Development](#development)
 - [Coding Style](#coding-style)
-- [Coding Style](#coding-style)
 - [Code Verification](#code-verification)
 - [Contributing](#contributing)
 - [License](#license)
