@@ -156,6 +156,7 @@
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "mockdate": "^2.0.1",
+    "netlify-cli": "^1.2.2",
     "npm-check-updates": "^2.12.1",
     "postcss": "^6.0.3",
     "postcss-cli": "^4.1.0",

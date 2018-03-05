@@ -6,15 +6,12 @@ const os = require('os');
 // eslint-disable-next-line prefer-destructuring
 const argv = require('yargs').argv;
 
-const uuid = require('uuid');
-
 const {inject} = require('./scripts/tests/openh264');
 const beforeSuite = require('./scripts/tests/beforeSuite');
 
 
 const browser = process.env.BROWSER || 'chrome';
 const platform = process.env.PLATFORM || 'mac 10.12';
-const tunnelId = uuid.v4();
 const port = process.env.PORT || 4567;
 const {suite} = argv || 'integration';
 
@@ -167,7 +164,7 @@ exports.config = {
   //
   // Set a base URL in order to shorten url command calls. If your url parameter starts
   // with "/", then the base url gets prepended.
-  baseUrl: process.env.TAP ? 'https://code.s4d.io' : `http://localhost:${port}`,
+  baseUrl: process.env.TAP ? 'https://code.s4d.io' : process.env.JOURNEY_TEST_BASE_URL || `http://localhost:${port}`,
   //
   // Default timeout for all waitFor* commands.
   waitforTimeout: 30000,
@@ -286,22 +283,6 @@ if (process.env.SAUCE) {
     user: process.env.SAUCE_USERNAME,
     key: process.env.SAUCE_ACCESS_KEY,
     build: process.env.BUILD_NUMBER,
-    sauceConnect: !process.env.TAP,
-    sauceConnectOpts: {
-      noSslBumpDomains: [
-        '*.wbx2.com',
-        '*.ciscospark.com',
-        '*.webex.com',
-        '127.0.0.1',
-        'localhost',
-        '*.clouddrive.com'
-      ],
-      tunnelDomains: [
-        '127.0.0.1',
-        'localhost'
-      ],
-      tunnelIdentifier: tunnelId,
-      port: process.env.SAUCE_CONNECT_PORT || 4445
-    }
+    sauceConnect: false
   });
 }
