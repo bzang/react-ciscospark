@@ -12,7 +12,6 @@ const beforeSuite = require('./scripts/tests/beforeSuite');
 
 const browser = process.env.BROWSER || 'chrome';
 const platform = process.env.PLATFORM || 'mac 10.12';
-const port = process.env.PORT || 4567;
 const {suite} = argv || 'integration';
 
 const chromeCapabilities = {
@@ -56,9 +55,6 @@ if (process.env.SAUCE) {
 }
 else {
   services.push('selenium-standalone');
-}
-if (!process.env.TAP) {
-  services.push('static-server');
 }
 
 exports.config = {
@@ -164,7 +160,7 @@ exports.config = {
   //
   // Set a base URL in order to shorten url command calls. If your url parameter starts
   // with "/", then the base url gets prepended.
-  baseUrl: process.env.TAP ? 'https://code.s4d.io' : process.env.JOURNEY_TEST_BASE_URL || `http://localhost:${port}`,
+  baseUrl: process.env.TAP ? 'https://code.s4d.io' : process.env.JOURNEY_TEST_BASE_URL,
   //
   // Default timeout for all waitFor* commands.
   waitforTimeout: 30000,
@@ -236,14 +232,6 @@ exports.config = {
   // =====
   beforeSuite,
 
-  // Static Server setup
-  staticServerFolders: [
-    {mount: '/dist-space', path: './packages/node_modules/@ciscospark/widget-space/dist'},
-    {mount: '/dist-recents', path: './packages/node_modules/@ciscospark/widget-recents/dist'},
-    {mount: '/', path: './test/journeys/server/'},
-    {mount: '/axe-core', path: './node_modules/axe-core/'}
-  ],
-  staticServerPort: port,
   onPrepare(config, capabilities) {
     const defs = [
       capabilities.browserRemote.desiredCapabilities,

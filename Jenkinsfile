@@ -78,7 +78,7 @@ ansiColor('xterm') {
             ]) {
               sh 'echo \'//registry.npmjs.org/:_authToken=${NPM_TOKEN}\' >> .npmrc'
               sh '''#!/bin/bash -ex
-              source ~/.nvm/nvm.sh > /dev/null
+              source ~/.nvm/nvm.sh &> /dev/null
               nvm install v8.9.4
               nvm use v8.9.4
               npm install
@@ -89,7 +89,7 @@ ansiColor('xterm') {
 
           stage('Static Analysis') {
             sh '''#!/bin/bash -ex
-            source ~/.nvm/nvm.sh > /dev/null
+            source ~/.nvm/nvm.sh &> /dev/null
             nvm use v8.9.4
             npm run static-analysis
             '''
@@ -97,7 +97,7 @@ ansiColor('xterm') {
 
           stage('Unit Tests') {
             sh '''#!/bin/bash -ex
-            source ~/.nvm/nvm.sh > /dev/null
+            source ~/.nvm/nvm.sh &> /dev/null
             nvm use v8.9.4
             npm run jest
             '''
@@ -105,9 +105,9 @@ ansiColor('xterm') {
 
           stage('Build for Testing') {
             sh '''#!/bin/bash -ex
-            source ~/.nvm/nvm.sh > /dev/null
+            source ~/.nvm/nvm.sh &> /dev/null
             nvm use v8.9.4
-            NODE_ENV=test
+            export NODE_ENV=test
             cp -r ./test/journeys/server ./dist-test
             BUILD_DIST_PATH="${PWD}/dist-test/dist-space" npm run build:package widget-space
             BUILD_DIST_PATH="${PWD}/dist-test/dist-recents" npm run build:package widget-recents
@@ -120,7 +120,7 @@ ansiColor('xterm') {
               string(credentialsId: 'NETLIFY_TOKEN', variable: 'NETLIFY_TOKEN'),
             ]) {
               sh '''#!/bin/bash -ex
-              source ~/.nvm/nvm.sh > /dev/null
+              source ~/.nvm/nvm.sh &> /dev/null
               nvm use v8.9.4
               npx netlify deploy -t $NETLIFY_TOKEN
               '''
@@ -133,12 +133,13 @@ ansiColor('xterm') {
               usernamePassword(credentialsId: 'SAUCE_LABS_VALIDATED_MERGE_CREDENTIALS', passwordVariable: 'SAUCE_ACCESS_KEY', usernameVariable: 'SAUCE_USERNAME'),
             ]) {
              sh '''#!/bin/bash -ex
-             source ~/.nvm/nvm.sh > /dev/null
+             source ~/.nvm/nvm.sh &> /dev/null
              nvm use v8.9.4
-             JOURNEY_TEST_BASE_URL=https://practical-roentgen-7d4de0.netlify.com
-             CISCOSPARK_CLIENT_ID=C873b64d70536ed26df6d5f81e01dafccbd0a0af2e25323f7f69c7fe46a7be340 SAUCE=true PORT=4569 SAUCE_CONNECT_PORT=5006 BROWSER=firefox npm run test:integration &
-             sleep 60 && CISCOSPARK_CLIENT_ID=C873b64d70536ed26df6d5f81e01dafccbd0a0af2e25323f7f69c7fe46a7be340 SAUCE=true PORT=4568 SAUCE_CONNECT_PORT=5005 BROWSER=chrome npm run test:integration &
-             sleep 120 && CISCOSPARK_CLIENT_ID=C873b64d70536ed26df6d5f81e01dafccbd0a0af2e25323f7f69c7fe46a7be340 SAUCE=true PORT=4567 SAUCE_CONNECT_PORT=5004 BROWSER=chrome PLATFORM="windows 10" npm run test:integration &
+             export JOURNEY_TEST_BASE_URL=https://practical-roentgen-7d4de0.netlify.com
+             export CISCOSPARK_CLIENT_ID=C873b64d70536ed26df6d5f81e01dafccbd0a0af2e25323f7f69c7fe46a7be340
+             SAUCE=true BROWSER=firefox npm run test:integration &
+             sleep 60 && SAUCE=true BROWSER=chrome npm run test:integration &
+             sleep 120 && SAUCE=true BROWSER=chrome PLATFORM="windows 10" npm run test:integration &
              wait
              '''
              junit '**/reports/junit/wdio/*.xml'
@@ -147,7 +148,7 @@ ansiColor('xterm') {
 
           stage('Bump version'){
             sh '''#!/bin/bash -ex
-            source ~/.nvm/nvm.sh > /dev/null
+            source ~/.nvm/nvm.sh &> /dev/null
             nvm use v8.9.4
             git diff
             npm version patch -m "build %s"
@@ -164,10 +165,10 @@ ansiColor('xterm') {
               string(credentialsId: 'web-sdk-cdn-private-key-passphrase', variable: 'PRIVATE_KEY_PASSPHRASE'),
             ]) {
               sh '''#!/bin/bash -ex
-              source ~/.nvm/nvm.sh > /dev/null
+              source ~/.nvm/nvm.sh &> /dev/null
               nvm use v8.9.4
-              version=`cat .version`
-              NODE_ENV=production
+              export version=`cat .version`
+              export NODE_ENV=production
               BUILD_PUBLIC_PATH="https://code.s4d.io/widget-space/archives/${version}/" npm run build:package widget-space
               BUILD_PUBLIC_PATH="https://code.s4d.io/widget-space/archives/${version}/" npm run build sri widget-space
               BUILD_BUNDLE_PUBLIC_PATH="https://code.s4d.io/widget-space/archives/${version}/" BUILD_PUBLIC_PATH="https://code.s4d.io/widget-space/archives/${version}/demo/" npm run build:package widget-space-demo
@@ -224,7 +225,7 @@ ansiColor('xterm') {
                   echo 'Reminder: E403 errors below are normal. They occur for any package that has no updates to publish'
                   echo ''
                   sh '''#!/bin/bash -ex
-                  source ~/.nvm/nvm.sh > /dev/null
+                  source ~/.nvm/nvm.sh &> /dev/null
                   nvm use v8.9.4
                   npm run publish:components
                   git checkout .npmrc
