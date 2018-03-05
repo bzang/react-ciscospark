@@ -137,45 +137,12 @@ ansiColor('xterm') {
              nvm use v8.9.4
              export JOURNEY_TEST_BASE_URL=https://practical-roentgen-7d4de0.netlify.com
              export CISCOSPARK_CLIENT_ID=C873b64d70536ed26df6d5f81e01dafccbd0a0af2e25323f7f69c7fe46a7be340
-             SAUCE=true BROWSER=firefox npm run test:integration &
-             sleep 60 && SAUCE=true BROWSER=chrome npm run test:integration &
-             sleep 120 && SAUCE=true BROWSER=chrome PLATFORM="windows 10" npm run test:integration &
-             wait
+             export SAUCE=true
+             BROWSER=firefox npm run test:integration & sleep 60
+             BROWSER=chrome npm run test:integration & sleep 120
+             BROWSER=chrome PLATFORM="windows 10" npm run test:integration & wait
              '''
              junit '**/reports/junit/wdio/*.xml'
-            }
-          }
-
-          stage('Bump version'){
-            sh '''#!/bin/bash -ex
-            source ~/.nvm/nvm.sh &> /dev/null
-            nvm use v8.9.4
-            git diff
-            npm version patch -m "build %s"
-            version=`grep "version" package.json | head -1 | awk -F: '{ print $2 }' | sed 's/[", ]//g'`
-            echo $version > .version
-            '''
-            packageJsonVersion = readFile '.version'
-          }
-
-          stage('Build for CDN'){
-            withCredentials([
-              usernamePassword(credentialsId: 'MESSAGE_DEMO_CLIENT', passwordVariable: 'MESSAGE_DEMO_CLIENT_SECRET', usernameVariable: 'MESSAGE_DEMO_CLIENT_ID'),
-              file(credentialsId: 'web-sdk-cdn-private-key', variable: 'PRIVATE_KEY_PATH'),
-              string(credentialsId: 'web-sdk-cdn-private-key-passphrase', variable: 'PRIVATE_KEY_PASSPHRASE'),
-            ]) {
-              sh '''#!/bin/bash -ex
-              source ~/.nvm/nvm.sh &> /dev/null
-              nvm use v8.9.4
-              export version=`cat .version`
-              export NODE_ENV=production
-              BUILD_PUBLIC_PATH="https://code.s4d.io/widget-space/archives/${version}/" npm run build:package widget-space
-              BUILD_PUBLIC_PATH="https://code.s4d.io/widget-space/archives/${version}/" npm run build sri widget-space
-              BUILD_BUNDLE_PUBLIC_PATH="https://code.s4d.io/widget-space/archives/${version}/" BUILD_PUBLIC_PATH="https://code.s4d.io/widget-space/archives/${version}/demo/" npm run build:package widget-space-demo
-              BUILD_PUBLIC_PATH="https://code.s4d.io/widget-recents/archives/${version}/" npm run build:package widget-recents
-              BUILD_PUBLIC_PATH="https://code.s4d.io/widget-recents/archives/${version}/" npm run build sri widget-recents
-              BUILD_BUNDLE_PUBLIC_PATH="https://code.s4d.io/widget-recents/archives/${version}/" BUILD_PUBLIC_PATH="https://code.s4d.io/widget-recents/archives/${version}/demo/" npm run build:package widget-recents-demo
-              '''
             }
           }
 
@@ -195,6 +162,39 @@ ansiColor('xterm') {
           }
 
           if (currentBuild.result == 'SUCCESS'){
+
+            stage('Bump version'){
+              sh '''#!/bin/bash -ex
+              source ~/.nvm/nvm.sh &> /dev/null
+              nvm use v8.9.4
+              git diff
+              npm version patch -m "build %s"
+              version=`grep "version" package.json | head -1 | awk -F: '{ print $2 }' | sed 's/[", ]//g'`
+              echo $version > .version
+              '''
+              packageJsonVersion = readFile '.version'
+            }
+
+            stage('Build for CDN'){
+              withCredentials([
+                usernamePassword(credentialsId: 'MESSAGE_DEMO_CLIENT', passwordVariable: 'MESSAGE_DEMO_CLIENT_SECRET', usernameVariable: 'MESSAGE_DEMO_CLIENT_ID'),
+                file(credentialsId: 'web-sdk-cdn-private-key', variable: 'PRIVATE_KEY_PATH'),
+                string(credentialsId: 'web-sdk-cdn-private-key-passphrase', variable: 'PRIVATE_KEY_PASSPHRASE'),
+              ]) {
+                sh '''#!/bin/bash -ex
+                source ~/.nvm/nvm.sh &> /dev/null
+                nvm use v8.9.4
+                export version=`cat .version`
+                export NODE_ENV=production
+                BUILD_PUBLIC_PATH="https://code.s4d.io/widget-space/archives/${version}/" npm run build:package widget-space
+                BUILD_PUBLIC_PATH="https://code.s4d.io/widget-space/archives/${version}/" npm run build sri widget-space
+                BUILD_BUNDLE_PUBLIC_PATH="https://code.s4d.io/widget-space/archives/${version}/" BUILD_PUBLIC_PATH="https://code.s4d.io/widget-space/archives/${version}/demo/" npm run build:package widget-space-demo
+                BUILD_PUBLIC_PATH="https://code.s4d.io/widget-recents/archives/${version}/" npm run build:package widget-recents
+                BUILD_PUBLIC_PATH="https://code.s4d.io/widget-recents/archives/${version}/" npm run build sri widget-recents
+                BUILD_BUNDLE_PUBLIC_PATH="https://code.s4d.io/widget-recents/archives/${version}/" BUILD_PUBLIC_PATH="https://code.s4d.io/widget-recents/archives/${version}/demo/" npm run build:package widget-recents-demo
+                '''
+              }
+            }
 
             archive 'packages/node_modules/@ciscospark/widget-space/dist/**/*'
             archive 'packages/node_modules/@ciscospark/widget-recents/dist/**/*'
