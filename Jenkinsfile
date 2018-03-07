@@ -129,13 +129,13 @@ ansiColor('xterm') {
 
           stage('Run Journey Tests') {
             withCredentials([
-              string(credentialsId: 'REACT_WIDGETS_CLIENT_ID', variable: 'CISCOSPARK_CLIENT_ID'),
-              string(credentialsId: 'REACT_WIDGETS_CLIENT_SECRET', variable: 'CISCOSPARK_CLIENT_SECRET'),
+              string(credentialsId: '9f44ab21-7e83-480d-8fb3-e6495bf7e9f3', variable: 'CISCOSPARK_CLIENT_SECRET'),
               usernamePassword(credentialsId: 'SAUCE_LABS_VALIDATED_MERGE_CREDENTIALS', passwordVariable: 'SAUCE_ACCESS_KEY', usernameVariable: 'SAUCE_USERNAME'),
             ]) {
              sh '''#!/bin/bash -e
              source ~/.nvm/nvm.sh &> /dev/null
              nvm use v8.9.4
+             export CISCOSPARK_CLIENT_ID=C873b64d70536ed26df6d5f81e01dafccbd0a0af2e25323f7f69c7fe46a7be340
              export JOURNEY_TEST_BASE_URL=https://practical-roentgen-7d4de0.netlify.com
              export SAUCE=true
              BROWSER=firefox npm run test:integration & sleep 60
