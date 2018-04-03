@@ -2,6 +2,7 @@
 
 [![CircleCI](https://img.shields.io/circleci/project/github/ciscospark/react-ciscospark/master.svg)](https://circleci.com/gh/ciscospark/react-ciscospark)
 [![license](https://img.shields.io/github/license/ciscospark/react-ciscospark.svg)](https://github.com/ciscospark/react-ciscospark/blob/master/LICENSE)
+[![BrowserStack Status](https://www.browserstack.com/automate/badge.svg?badge_key=Q09kdnNPVkZmdDkzbU1TVms4MlA4YXVjUEJZbG9rRXdGVm1rU0hxMWN2OD0tLXBQbW5uTEpDaWIxK3pVb0RYTXNJanc9PQ==--79ce81eae6f3bffd13f8e6440c2e3b3bc9819563)](https://www.browserstack.com/automate/public-build/Q09kdnNPVkZmdDkzbU1TVms4MlA4YXVjUEJZbG9rRXdGVm1rU0hxMWN2OD0tLXBQbW5uTEpDaWIxK3pVb0RYTXNJanc9PQ==--79ce81eae6f3bffd13f8e6440c2e3b3bc9819563)
 
 > Cisco Spark for React
 
