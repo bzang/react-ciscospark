@@ -1,16 +1,7 @@
 import {assert} from 'chai';
 
+import {sendMessage} from '../../sdk';
 import waitForPromise from '../../wait-for-promise';
-
-export const elements = {
-  recentsWidget: '.ciscospark-spaces-list-wrapper',
-  firstSpace: '.space-item:first-child',
-  title: '.space-title',
-  unreadIndicator: '.space-unread-indicator',
-  lastActivity: '.space-last-activity',
-  callButton: 'button[aria-label="Call Space"]',
-  answerButton: 'button[aria-label="Answer"]'
-};
 
 /**
  * Sends a message to a space and verifies that it is received and displayed
@@ -23,19 +14,19 @@ export const elements = {
  * @param {boolean} [isOneOnOne=false]
  * @returns {undefined}
  */
-export function displayIncomingMessage(aBrowser, sender, conversation, message, isOneOnOne = false) {
-  const spaceTitle = isOneOnOne ? sender.displayName : conversation.displayName;
-  waitForPromise(sender.spark.internal.conversation.post(conversation, {
-    displayName: message,
-    content: message
-  }));
+export function displayIncomingMessage({
+  page, sender, space, message, isOneOnOne = false
+}) {
+  const spaceTitle = isOneOnOne ? sender.displayName : space.displayName;
+  sendMessage({sparkInstance: sender.spark, space, message});
+
   browser.waitUntil(() =>
-    aBrowser.getText(`${elements.firstSpace} ${elements.title}`) === spaceTitle
-    , 5000, 'conversation not displayed');
+    page.firstSpaceTitleText === spaceTitle,
+  5000, 'failed to display space');
   browser.waitUntil(() =>
-    aBrowser.getText(`${elements.firstSpace} ${elements.lastActivity}`).includes(message)
-    , 5000, 'does not have last message displayed');
-  assert.isTrue(aBrowser.isVisible(`${elements.firstSpace} ${elements.unreadIndicator}`), 'does not have unread indicator');
+    page.firstSpaceLastActivityText.includes(message),
+  5000, 'failed to display last message');
+  assert.isTrue(page.hasfirstUnreadIndicator, 'does not have unread indicator');
 }
 
 /**
@@ -50,24 +41,21 @@ export function displayIncomingMessage(aBrowser, sender, conversation, message, 
  * @param {string} message
  * @returns {undefined}
  */
-export function displayAndReadIncomingMessage(aBrowser, sender, receiver, conversation, message) {
-  let activity;
-  waitForPromise(sender.spark.internal.conversation.post(conversation, {
-    displayName: message
-  }).then((a) => {
-    activity = a;
-  }));
+export function displayAndReadIncomingMessage({
+  page, sender, receiver, space, message
+}) {
+  const activity = page.postToSpace({sender, space, message});
+
   browser.waitUntil(() =>
-    aBrowser.getText(`${elements.firstSpace} ${elements.lastActivity}`).includes(message),
-  5000,
-  'does not have last message sent');
-  assert.isTrue(aBrowser.isVisible(`${elements.firstSpace} ${elements.unreadIndicator}`), 'does not have unread indicator');
+    page.firstSpaceLastActivityText.includes(message),
+  5000, 'does not have last message sent');
+  assert.isTrue(page.hasfirstUnreadIndicator, 'does not have unread indicator');
+
   // Acknowledge the activity to mark it read
-  waitForPromise(receiver.spark.internal.conversation.acknowledge(conversation, activity));
+  browser.call(() => receiver.spark.internal.conversation.acknowledge(space, activity));
   browser.waitUntil(() =>
-    !aBrowser.isVisible(`${elements.firstSpace} ${elements.unreadIndicator}`),
-  5000,
-  'does not remove unread indicator');
+    !page.hasfirstUnreadIndicator,
+  5000, 'does not remove unread indicator');
 }
 
 /**

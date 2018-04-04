@@ -38,7 +38,8 @@ function encode(fp) {
  * @returns {string}
  */
 function platformToShortName(platform) {
-  if (platform.toLowerCase().includes('os x') || platform === 'darwin' || platform.includes('mac')) {
+  const p = platform.toLowerCase();
+  if (p.toLowerCase().includes('os x') || p === 'darwin' || p.toLowerCase().includes('mac')) {
     return 'mac';
   }
 
@@ -59,9 +60,8 @@ async function injectProfile(def) {
 
     const dir = path.resolve(process.cwd(), `${PROFILE_DIR}/${platform}`);
     const profile = await copy(dir);
-    const encoded = await encode(profile);
     // eslint-disable-next-line
-    def.firefox_profile = encoded;
+    def.firefox_profile = await encode(profile);
   }
 }
 

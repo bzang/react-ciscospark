@@ -1,25 +1,35 @@
 import {
   hangupBeforeAnswerTest,
   declineIncomingCallTest,
-  hangupDuringCallTest
+  hangupDuringCallTest,
+  callEventTest
 } from '../test-helpers/space-widget/meet';
 
 export default function allMeetTests({
-  browserLocal, browserRemote, loadBrowsers
+  localPage, remotePage, isGroup
 }) {
-  it('hangs up before answer', () => {
-    loadBrowsers();
-    hangupBeforeAnswerTest(browserLocal, browserRemote);
-  });
+  describe('Meet Tests', function meet() {
+    it('hangs up before answer', () => {
+      hangupBeforeAnswerTest({localPage, remotePage});
+    });
 
-  it('declines an incoming call', () => {
-    loadBrowsers();
-    declineIncomingCallTest(browserLocal, browserRemote);
-  });
+    it('declines an incoming call', () => {
+      declineIncomingCallTest({localPage, remotePage, isGroup});
+    });
 
-  it('hangs up active call', () => {
-    loadBrowsers();
-    hangupDuringCallTest(browserLocal, browserRemote);
+    it('hangs up active call', () => {
+      hangupDuringCallTest({localPage, remotePage, isGroup});
+    });
+
+    it('has proper call event data', () => {
+      localPage.clearEventLog();
+      remotePage.clearEventLog();
+      hangupDuringCallTest({localPage, remotePage, isGroup: false});
+      callEventTest({
+        caller: localPage,
+        receiver: remotePage
+      });
+    });
   });
 }
 

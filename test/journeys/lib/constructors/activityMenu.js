@@ -3,10 +3,10 @@ import {
   openMenuAndClickButton
 } from '../test-helpers/space-widget/main';
 
-export default function activityMenuTests(aBrowser) {
+export default function activityMenuTests(page) {
   describe('Activity Menu', () => {
     it('switches to files widget', () => {
-      openMenuAndClickButton(aBrowser, elements.filesButton);
+      page.openMenuAndClickButton(aBrowser, elements.filesButton);
       browser.waitUntil(() =>
         aBrowser.isVisible(elements.filesWidget),
       5000, 'could not switch to files widget');

@@ -1,6 +1,5 @@
 require('dotenv').config();
 require('babel-register');
-
 const os = require('os');
 
 // eslint-disable-next-line prefer-destructuring
@@ -10,7 +9,7 @@ const {inject} = require('../scripts/utils/tests/openh264');
 
 const browserType = process.env.BROWSER || 'chrome';
 const browserCount = process.env.BROWSER_COUNT || 2;
-const platform = process.env.PLATFORM || 'mac 10.12';
+const platform = process.env.PLATFORM || os.platform();
 const port = process.env.PORT || 4567;
 const suite = argv.suite || 'integration';
 const logPath = './reports/';
@@ -65,11 +64,15 @@ function getBrowserCapabilities(type = 'chrome', count = 2) {
   return cap;
 }
 
-let mochaTimeout = 30000;
+const services = [
+  'selenium-standalone',
+  'static-server'
+];
 
-if (process.env.DEBUG_JOURNEYS) {
-  mochaTimeout = 99999999;
-}
+// if (process.env.BROWSER && process.env.BROWSER.includes('firefox')) {
+//   services.push('firefox-profile');
+// }
+
 
 exports.config = {
   seleniumInstallArgs: {version: SELENIUM_VERSION},
@@ -102,10 +105,10 @@ exports.config = {
       './test/journeys/specs/oneOnOne/startup-settings.js'
     ],
     'oneOnOne-meet': [
-      './test/journeys/specs/oneOnOne/meet/*.js'
+      './test/journeys/specs/oneOnOne/meet.js'
     ],
     'oneOnOne-messaging': [
-      './test/journeys/specs/oneOnOne/messaging/*.js'
+      './test/journeys/specs/oneOnOne/messaging.js'
     ],
     space: ['./test/journeys/specs/space/**/*.js'],
     'space-basic': [
@@ -149,7 +152,6 @@ exports.config = {
   //
   // Level of logging verbosity: silent | verbose | command | data | result | error
   logLevel: 'verbose',
-  logOutput: `${logPath}/browser`,
   //
   // Enables colors for log output.
   coloredLogs: true,
@@ -171,15 +173,11 @@ exports.config = {
   //
   // Default timeout in milliseconds for request
   // if Selenium Grid doesn't send response
-  connectionRetryTimeout: 20000,
+  connectionRetryTimeout: 30000,
   //
   // Default request retries count
-  connectionRetryCount: 1,
-  services: [
-    'firefox-profile',
-    'selenium-standalone',
-    'static-server'
-  ],
+  connectionRetryCount: 3,
+  services,
   //
   // Framework you want to run your specs with.
   // The following are supported: Mocha, Jasmine, and Cucumber
@@ -211,7 +209,10 @@ exports.config = {
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: mochaTimeout
+    bail: 1,
+    fullTrace: true,
+    slow: 5000,
+    timeout: process.env.DEBUG_JOURNEYS ? 99999999 : 30000
   },
 
   // =====
@@ -219,19 +220,6 @@ exports.config = {
   // =====
   onPrepare(conf, caps) {
     const defs = Object.keys(caps).map((c) => caps[c].desiredCapabilities);
-    /* eslint-disable no-param-reassign */
-    defs.forEach((d) => {
-      if (process.env.SAUCE) {
-        d.build = build;
-        d.version = d.version || 'latest';
-        d.platform = d.platform || 'OS X 10.12';
-      }
-      else {
-        d.platform = os.platform();
-      }
-    });
-    /* eslint-enable no-param-reassign */
-
     return inject(defs);
   },
   beforeSuite() {
